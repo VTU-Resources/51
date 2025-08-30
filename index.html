@@ -138,7 +138,7 @@
   </div>
 
   <!-- access code overlay -->
-  <div id="overlay" class="overlay" role="dialog" aria-modal="true">
+  <div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="prompt">
       <h3>Enter Access Code</h3>
       <div class="code-row">
@@ -208,6 +208,7 @@
       codeInput.value = '';
       codeError.style.display = 'none';
       overlay.style.display = 'flex';
+      overlay.setAttribute('aria-hidden','false');
       codeInput.focus();
       // prevent page scroll while modal open
       document.body.style.overflow = 'hidden';
@@ -222,7 +223,11 @@
     });
 
     // Close overlay
-    function closeOverlay(){ overlay.style.display = 'none'; document.body.style.overflow = ''; }
+    function closeOverlay(){
+      overlay.style.display = 'none';
+      overlay.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
 
     cancelBtn.addEventListener('click', ()=>{ closeOverlay(); });
 
@@ -264,10 +269,50 @@
       return true;
     }
 
+    // Reset UI back to top/home state
+    function resetToHome(){
+      canceled = false;
+      mode = null;
+
+      // hide overlay and loader if visible
+      overlay.style.display = 'none';
+      overlay.setAttribute('aria-hidden','true');
+      loaderWrap.style.display = 'none';
+      loaderWrap.setAttribute('aria-hidden','true');
+
+      // clear result area
+      const result = document.getElementById('result');
+      result.innerHTML = '';
+
+      // show choices again
+      const choiceRow = document.querySelector('.choice-row');
+      const intro = document.querySelector('.intro');
+      if(choiceRow) choiceRow.style.display = '';
+      if(intro) intro.style.display = '';
+
+      // remove exact theme if applied
+      document.getElementById('app').classList.remove('exact-theme');
+
+      // restore scrolling
+      document.body.style.overflow = '';
+
+      // focus first choice for accessibility
+      const firstChoice = document.querySelector('.choice');
+      if(firstChoice){ firstChoice.focus(); }
+
+      // scroll to top of card
+      document.getElementById('app').scrollIntoView({behavior:'smooth'});
+    }
+
     async function startLoader(){
       canceled = false;
+      // ensure overlay closed
+      overlay.style.display = 'none';
+      overlay.setAttribute('aria-hidden','true');
+
       loaderWrap.style.display = 'flex';
       loaderWrap.setAttribute('aria-hidden','false');
+      typedEl.textContent = '';
       progressBar.style.width = '0%';
 
       const steps = [
@@ -279,17 +324,18 @@
 
       for(let i=0;i<steps.length;i++){
         const ok = await typeText(steps[i]);
-        if(!ok) break;
+        if(!ok) { resetToHome(); return; }
         await wait(450);
         const ok2 = await eraseText();
-        if(!ok2) break;
+        if(!ok2) { resetToHome(); return; }
         progressBar.style.width = `${(i+1)/steps.length*80}%`;
       }
 
-      if(canceled){ loaderWrap.style.display='none'; loaderWrap.setAttribute('aria-hidden','true'); return; }
+      if(canceled){ resetToHome(); return; }
 
       // final non-erasing messages
-      await typeText('Verifying your id... found: ChaithraShridhar', 28);
+      const okFinal = await typeText('Verifying your id... found: ChaithraShridhar', 28);
+      if(!okFinal){ resetToHome(); return; }
       progressBar.style.width = '92%';
       await wait(700);
       typedEl.textContent += '\nRedirecting...';
@@ -303,10 +349,9 @@
     }
 
     loaderCancel.addEventListener('click', ()=>{
+      // user clicks cancel while processing -> go back to home
       canceled = true;
-      loaderWrap.style.display='none';
-      loaderWrap.setAttribute('aria-hidden','true');
-      showResult(true);
+      resetToHome();
     });
 
     // hide choice area and intro when showing result so only selected materials are shown
@@ -370,7 +415,16 @@
         result.appendChild(list);
       }
 
-      // do not add "choose another" button. only show the selected materials per request.
+      // Add a Home button after successful login/result so users can return
+      const actions = document.createElement('div');
+      actions.style.marginTop = '14px';
+      const homeBtn = document.createElement('button');
+      homeBtn.className = 'btn ghost';
+      homeBtn.textContent = 'Home';
+      homeBtn.addEventListener('click', resetToHome);
+      homeBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter') resetToHome(); });
+      actions.appendChild(homeBtn);
+      result.appendChild(actions);
 
       // ensure page scrolls to results on mobile
       setTimeout(()=>{ result.scrollIntoView({behavior:'smooth', block:'start'}); },80);
@@ -383,7 +437,7 @@
     document.addEventListener('keydown',(e)=>{ 
       if(e.key==='Escape'){
         if(overlay.style.display==='flex'){ closeOverlay(); } 
-        else if(loaderWrap.style.display==='flex'){ canceled=true; loaderWrap.style.display='none'; loaderWrap.setAttribute('aria-hidden','true'); showResult(true); }
+        else if(loaderWrap.style.display==='flex'){ canceled=true; resetToHome(); }
       } 
     });
   </script>
