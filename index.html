@@ -133,7 +133,6 @@
   <div id="overlay" class="overlay" role="dialog" aria-modal="true">
     <div class="prompt">
       <h3>Enter Access Code</h3>
-      <p>Only BS4232 or cs are accepted</p>
       <div class="code-row">
         <input id="codeInput" inputmode="text" autocomplete="off" placeholder="Enter code" />
       </div>
@@ -285,7 +284,7 @@
 
       if(mode === 'most'){
         const h = document.createElement('h2'); h.textContent = 'Most Important Questions'; h.style.color = 'var(--gold)'; h.style.marginTop='14px'; h.style.fontSize='18px';
-        const p = document.createElement('p'); p.textContent = 'Click a module to open the example Drive file'; p.style.color='var(--muted)'; p.style.marginTop='6px';
+        const p = document.createElement('p'); p.textContent = 'Select the Modules & Access'; p.style.color='var(--muted)'; p.style.marginTop='6px';
         result.appendChild(h); result.appendChild(p);
 
         const list = document.createElement('div'); list.className = 'module-list';
@@ -300,7 +299,7 @@
         // exact theme
         document.getElementById('app').classList.add('exact-theme');
         const h = document.createElement('h2'); h.textContent = 'Exact Answers'; h.style.color = 'var(--gold-2)'; h.style.marginTop='14px'; h.style.fontSize='18px';
-        const p = document.createElement('p'); p.textContent = 'Click a module to open the example Drive file'; p.style.color='var(--muted)'; p.style.marginTop='6px';
+        const p = document.createElement('p'); p.textContent = 'Select the Modules & Access'; p.style.color='var(--muted)'; p.style.marginTop='6px';
         result.appendChild(h); result.appendChild(p);
 
         const list = document.createElement('div'); list.className = 'module-list';
