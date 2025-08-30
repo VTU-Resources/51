@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>18CS55 – Brilliant Students (Responsive)</title>
+  <title>18CS55 – Brilliant Students (Responsive) — Fixed</title>
   <style>
     :root{
       --bg-1:#003b1f;
@@ -15,6 +15,9 @@
       --muted:#cfe3d1;
       --shadow: rgba(0,0,0,0.24);
     }
+
+    /* remove default tap highlight on mobile (fixes the "blue cover" on tap) */
+    *{ -webkit-tap-highlight-color: transparent; }
 
     /* Reset and base */
     *{box-sizing:border-box;margin:0;padding:0}
@@ -35,8 +38,10 @@
     /* Choice cards */
     .intro{margin-top:16px;font-size:13px;color:var(--muted)}
     .choice-row{display:flex;gap:14px;margin-top:16px;flex-wrap:wrap}
-    .choice{flex:1 1 260px;background:linear-gradient(180deg,#045a36,#006640);padding:16px;border-radius:11px;border-left:6px solid var(--gold);cursor:pointer;transition:transform .18s ease, box-shadow .18s ease}
+    .choice{flex:1 1 260px;background:linear-gradient(180deg,#045a36,#006640);padding:16px;border-radius:11px;border-left:6px solid var(--gold);cursor:pointer;transition:transform .18s ease, box-shadow .18s ease;touch-action:manipulation}
     .choice:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,0,0,0.28)}
+    .choice:active{transform:translateY(-2px)}
+    .choice:focus{outline:none;box-shadow:0 12px 30px rgba(0,0,0,0.28), 0 0 0 4px rgba(244,192,111,0.12)}
     .choice .title{font-weight:700;color:var(--gold);font-size:15px}
     .choice .desc{font-size:12px;color:var(--muted);margin-top:6px}
 
@@ -45,8 +50,10 @@
 
     /* Module list */
     .module-list{margin-top:18px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-    .module-card{background:#1a3329;padding:12px 14px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-left:6px solid var(--gold);transition:transform .12s ease}
-    .module-card:hover{transform:translateY(-4px)}
+    .module-card{background:#1a3329;padding:12px 14px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-left:6px solid var(--gold);transition:transform .12s ease;touch-action:manipulation}
+    .module-card:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(0,0,0,0.26)}
+    .module-card:active{transform:translateY(-2px)}
+    .module-card:focus{outline:none;box-shadow:0 10px 26px rgba(0,0,0,0.26), 0 0 0 4px rgba(255,213,138,0.08)}
     .module-title{font-weight:700;color:var(--gold);font-size:14px;display:flex;align-items:center;gap:10px}
     .module-arrow{font-size:16px;color:var(--gold)}
 
@@ -69,6 +76,7 @@
     .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
     .btn.primary{background:var(--gold);color:#052}
     .btn.ghost{background:transparent;color:var(--gold);border:1px solid rgba(255,255,255,0.04)}
+    .btn:focus{outline:none;box-shadow:0 8px 22px rgba(0,0,0,0.36), 0 0 0 4px rgba(244,192,111,0.08)}
     .error{color:#ffb3b3;margin-top:8px;font-size:13px}
 
     /* Loader screen */
@@ -112,12 +120,12 @@
       <div class="intro">Choose an option below to continue</div>
 
       <div class="choice-row">
-        <div class="choice" id="btn-most" onclick="start('most')">
+        <div class="choice" id="btn-most" role="button" tabindex="0" data-mode="most">
           <div class="title">Most Important Questions</div>
           <div class="desc">Shortlist of highest priority questions for last-minute revision</div>
         </div>
 
-        <div class="choice" id="btn-exact" onclick="start('exact')">
+        <div class="choice" id="btn-exact" role="button" tabindex="0" data-mode="exact">
           <div class="title">Exact Answers for All Questions</div>
           <div class="desc">Complete answers with a slightly different visual style</div>
         </div>
@@ -149,7 +157,7 @@
     <div class="terminal" role="status">
       <div class="term-head">
         <img src="1.png" alt="logo" />
-        <div style="font-weight:700;color:var(--gold)">Brilliant Students Verification</div>
+        <div style="font-weight:700;color:var(--gold)">Brilliant Students verification</div>
       </div>
       <div id="typed" class="typed"></div>
       <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
@@ -175,6 +183,25 @@
     const progressBar = document.getElementById('progressBar');
     const loaderCancel = document.getElementById('loaderCancel');
 
+    // Replace these arrays with your real Drive links.
+    // Most important questions (5 links)
+    const modulesMost = [
+      'https://drive.google.com/file/d/1_78tpmdhuzqmFL6mAa222bYi3RfBC6UE/view?usp=drive_link',
+      'https://drive.google.com/file/d/1DJyoD6NZdU6R6WF-lIypqTohDIQorvE1/view?usp=drive_link',
+      'https://drive.google.com/file/d/1LA6XI2DgcT_5U-qBLS4sKu_iGpLexOcf/view?usp=drive_link',
+      'https://drive.google.com/file/d/1PdYvghq_OD1HABpN2jK7WxvZcQ_OXGjD/view?usp=drive_link',
+      'https://drive.google.com/file/d/19Fq4uzcfJ44-C1wfwqDZOZ7IAGas5ENh/view?usp=drive_link'
+    ];
+
+    // Exact answers (5 different links) - change these to your exact-answer Drive links
+    const modulesExact = [
+      'https://drive.google.com/file/d/1EXACTa1b2c3d4e5f6g7h8/view?usp=drive_link',
+      'https://drive.google.com/file/d/2EXACTb2c3d4e5f6g7h8i9/view?usp=drive_link',
+      'https://drive.google.com/file/d/3EXACTc3d4e5f6g7h8i9j/view?usp=drive_link',
+      'https://drive.google.com/file/d/4EXACTd4e5f6g7h8i9j0k/view?usp=drive_link',
+      'https://drive.google.com/file/d/5EXACTe5f6g7h8i9j0k1l/view?usp=drive_link'
+    ];
+
     // Start flow when option selected
     function start(which){
       mode = which; // 'most' or 'exact'
@@ -185,6 +212,14 @@
       // prevent page scroll while modal open
       document.body.style.overflow = 'hidden';
     }
+
+    // make keyboard activation for choice cards
+    document.querySelectorAll('.choice').forEach(el => {
+      el.addEventListener('click', ()=> start(el.dataset.mode));
+      el.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); start(el.dataset.mode); }
+      });
+    });
 
     // Close overlay
     function closeOverlay(){ overlay.style.display = 'none'; document.body.style.overflow = ''; }
@@ -274,26 +309,28 @@
       const result = document.getElementById('result');
       result.innerHTML = '';
 
-      const modules = {
-        1: 'https://drive.google.com/file/d/1_78tpmdhuzqmFL6mAa222bYi3RfBC6UE/view?usp=drive_link',
-        2: 'https://drive.google.com/file/d/1DJyoD6NZdU6R6WF-lIypqTohDIQorvE1/view?usp=drive_link',
-        3: 'https://drive.google.com/file/d/1LA6XI2DgcT_5U-qBLS4sKu_iGpLexOcf/view?usp=drive_link',
-        4: 'https://drive.google.com/file/d/1PdYvghq_OD1HABpN2jK7WxvZcQ_OXGjD/view?usp=drive_link',
-        5: 'https://drive.google.com/file/d/19Fq4uzcfJ44-C1wfwqDZOZ7IAGas5ENh/view?usp=drive_link'
-      };
+      const list = document.createElement('div');
+      list.className = 'module-list';
+
+      const chosen = (mode === 'most') ? modulesMost : modulesExact;
 
       if(mode === 'most'){
         const h = document.createElement('h2'); h.textContent = 'Most Important Questions'; h.style.color = 'var(--gold)'; h.style.marginTop='14px'; h.style.fontSize='18px';
         const p = document.createElement('p'); p.textContent = 'Select the Modules & Access'; p.style.color='var(--muted)'; p.style.marginTop='6px';
         result.appendChild(h); result.appendChild(p);
 
-        const list = document.createElement('div'); list.className = 'module-list';
-        for(const k in modules){
+        for(let i=0;i<chosen.length;i++){
+          const k = i+1;
           const card = document.createElement('div'); card.className = 'module-card';
-          card.innerHTML = `<div class="module-title">📘 Module ${k}</div><div class="module-arrow">➔</div>`;
-          card.addEventListener('click', ()=>window.open(modules[k],'_blank'));
+          card.innerHTML = `<div class=\"module-title\">📘 Module ${k}</div><div class=\"module-arrow\">➔</div>`;
+          card.tabIndex = 0;
+          card.setAttribute('role','button');
+          const link = chosen[i];
+          card.addEventListener('click', ()=> window.open(link, '_blank'));
+          card.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); window.open(link, '_blank'); } });
           list.appendChild(card);
         }
+
         result.appendChild(list);
       } else {
         // exact theme
@@ -302,13 +339,18 @@
         const p = document.createElement('p'); p.textContent = 'Select the Modules & Access'; p.style.color='var(--muted)'; p.style.marginTop='6px';
         result.appendChild(h); result.appendChild(p);
 
-        const list = document.createElement('div'); list.className = 'module-list';
-        for(const k in modules){
+        for(let i=0;i<chosen.length;i++){
+          const k = i+1;
           const card = document.createElement('div'); card.className = 'module-card';
-          card.innerHTML = `<div class="module-title">📚 Module ${k}</div><div class="module-arrow">➔</div>`;
-          card.addEventListener('click', ()=>window.open(modules[k],'_blank'));
+          card.innerHTML = `<div class=\"module-title\">📚 Module ${k}</div><div class=\"module-arrow\">➔</div>`;
+          card.tabIndex = 0;
+          card.setAttribute('role','button');
+          const link = chosen[i];
+          card.addEventListener('click', ()=> window.open(link, '_blank'));
+          card.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); window.open(link, '_blank'); } });
           list.appendChild(card);
         }
+
         result.appendChild(list);
       }
 
