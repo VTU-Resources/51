@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>18CS55 – Brilliant Students</title>
+  <style>
+    :root{
+      --bg: #003b1f;
+      --gold: #f4c06f;
+      --light-gold: #ffdfa1;
+      --text: #fdf6e3;
+      --card-bg: #004d29;
+      --shadow: rgba(0,0,0,0.18);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Tahoma,sans-serif}
+    body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+
+    /* Card wrapper */
+    .card{width:100%;max-width:880px;background:var(--card-bg);border-radius:14px;padding:22px;box-shadow:0 8px 28px var(--shadow)}
+
+    .header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;text-align:center}
+    .logo{width:70px;height:70px;border-radius:50%;border:3px solid var(--gold);object-fit:cover}
+    .title{font-size:18px;color:var(--light-gold);font-weight:700}
+    .subtitle{color:#dfe6dc;font-size:13px;margin-top:2px}
+
+    .choice-row{display:flex;gap:16px;margin-top:20px;flex-wrap:wrap}
+    .choice{flex:1 1 260px;background:#006640;padding:16px;border-radius:10px;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:8px;border-left:6px solid var(--gold)}
+    .choice:hover{background:#007a50;transform:translateY(-3px)}
+    .choice .big{font-size:15px;font-weight:700;color:var(--light-gold)}
+    .choice .small{font-size:12px;color:#e6efe6}
+
+    footer{margin-top:18px;color:#c9d7c5;font-size:12px;text-align:center}
+
+    /* Overlay code entry */
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#002a1a;z-index:50;padding:20px}
+    .prompt{background:#004d29;padding:20px;border-radius:10px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,0.4)}
+    .prompt h3{color:var(--light-gold);margin-bottom:8px;font-size:16px}
+    .prompt p{color:#e0e8e0;font-size:13px;margin-bottom:12px}
+    .code-row{display:flex;gap:8px}
+    .code-row input{flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;background:#fff;color:#000;font-size:14px}
+    .btn{padding:10px 14px;border-radius:8px;cursor:pointer;border:none;font-size:13px}
+    .btn.primary{background:var(--gold);color:#052;flex-shrink:0}
+    .btn.ghost{background:#003b1f;color:var(--light-gold);border:1px solid #777}
+    .error{color:#ffb3b3;margin-top:10px;font-size:12px}
+
+    /* Loader Screen */
+    .loader-screen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#001a12;z-index:100;padding:20px}
+    .terminal{background:#000;width:100%;max-width:480px;border-radius:10px;padding:18px;color:#00ff9c;font-family:monospace;font-size:13px;line-height:1.4;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+    .term-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .term-header img{width:32px;height:32px;border-radius:6px;border:1px solid #333}
+    .typed{display:block;white-space:pre-wrap}
+    .progress{height:6px;width:100%;background:#222;border-radius:6px;overflow:hidden;margin-top:12px}
+    .progress > i{display:block;height:100%;width:0%;background:#00ff9c;transition:width .5s ease}
+    .cancel-btn{margin-top:12px;background:#ff4d4d;color:#fff;padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px}
+    .cancel-btn:hover{background:#e60000}
+
+    /* Module list */
+    .module-list{margin-top:16px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+    .module-card{background:#005a36;padding:12px 14px;border-radius:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-left:4px solid var(--gold)}
+    .module-card:hover{background:#007045;transform:translateY(-2px)}
+    .module-title{font-size:14px;font-weight:600;color:var(--light-gold);display:flex;gap:8px;align-items:center}
+    .arrow{font-size:16px;color:var(--gold)}
+
+    /* Exact theme variation */
+    .exact-theme{--gold:#ffd58a;--light-gold:#fff0c9}
+    .exact-theme .module-card{background:#2e3d35}
+
+    @media(max-width:480px){
+      .title{font-size:16px}
+      .choice .big{font-size:14px}
+      .choice .small{font-size:11px}
+      .prompt h3{font-size:15px}
+      .prompt p{font-size:12px}
+      .btn{font-size:12px}
+      .terminal{font-size:12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="app">
+    <div class="header">
+      <img src="1.png" alt="Brilliant Students logo" class="logo"/>
+      <div>
+        <div class="title">Subject Code: 18CS55</div>
+        <div class="subtitle">Application Development using Python</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-size:13px;color:#e0e8e0">Choose an option below:</div>
+    <div class="choice-row">
+      <div class="choice" onclick="startFlow('most')">
+        <div class="big">Most Important Questions</div>
+        <div class="small">Quick revision shortlist</div>
+      </div>
+      <div class="choice" onclick="startFlow('exact')">
+        <div class="big">Exact Answers</div>
+        <div class="small">Full answers with different style</div>
+      </div>
+    </div>
+    <div id="result-area"></div>
+    <footer>© 2025 Brilliant Students</footer>
+  </div>
+
+  <!-- Code overlay -->
+  <div id="overlay" class="overlay">
+    <div class="prompt">
+      <h3>Enter Access Code</h3>
+      <p>Accepted codes: <b>BS4232</b> or <b>cs</b></p>
+      <div class="code-row">
+        <input id="accessCode" placeholder="Enter code"/>
+        <button class="btn primary" onclick="submitCode()">Submit</button>
+        <button class="btn ghost" onclick="closeOverlay()">Cancel</button>
+      </div>
+      <div id="codeError" class="error" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div id="loader" class="loader-screen">
+    <div class="terminal">
+      <div class="term-header">
+        <img src="1.png" alt="logo"/>
+        <div>Brilliant Students Loader</div>
+      </div>
+      <div id="typed" class="typed"></div>
+      <div class="progress"><i id="progressBar"></i></div>
+      <button class="cancel-btn" onclick="cancelLoading()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    const ALLOWED = ["BS4232","CS"];
+    let chosenMode = null;
+    let loadingCanceled = false;
+
+    function startFlow(mode){
+      chosenMode = mode;
+      document.getElementById("accessCode").value = "";
+      document.getElementById("codeError").style.display = "none";
+      document.getElementById("overlay").style.display = "flex";
+    }
+
+    function closeOverlay(){
+      document.getElementById("overlay").style.display = "none";
+    }
+
+    function submitCode(){
+      const code = document.getElementById("accessCode").value.trim().toUpperCase();
+      if(!code){ showError("Please enter the code"); return; }
+      if(!ALLOWED.includes(code)){ showError("Invalid code"); return; }
+      document.getElementById("overlay").style.display = "none";
+      showLoader();
+    }
+
+    function showError(msg){
+      let el = document.getElementById("codeError");
+      el.textContent = msg; el.style.display="block";
+    }
+
+    function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+    async function typeText(msg){
+      const typed = document.getElementById("typed");
+      for(let i=0;i<=msg.length;i++){
+        if(loadingCanceled) return;
+        typed.textContent = msg.slice(0,i);
+        await wait(35);
+      }
+      await wait(500);
+    }
+
+    async function eraseText(){
+      const typed = document.getElementById("typed");
+      let txt = typed.textContent;
+      for(let i=txt.length;i>=0;i--){
+        if(loadingCanceled) return;
+        typed.textContent = txt.slice(0,i);
+        await wait(20);
+      }
+    }
+
+    async function showLoader(){
+      loadingCanceled = false;
+      const loader = document.getElementById("loader");
+      loader.style.display="flex";
+      const bar = document.getElementById("progressBar");
+      const typed = document.getElementById("typed");
+      typed.textContent = "";
+      bar.style.width = "0%";
+
+      const messages = [
+        "Initializing modules...",
+        "Checking access keys...",
+        "Loading Drive links...",
+        "Preparing secure view..."
+      ];
+
+      for(let i=0;i<messages.length;i++){
+        await typeText(messages[i]);
+        await eraseText();
+        bar.style.width = (25*(i+1))+"%";
+      }
+
+      if(loadingCanceled){ loader.style.display="none"; return; }
+
+      await typeText("Verifying your id... found: Chandana SR");
+      bar.style.width="95%";
+      await wait(900);
+      typed.textContent += "\nRedirecting...";
+      bar.style.width="100%";
+      await wait(1000);
+
+      if(!loadingCanceled){
+        loader.style.display="none";
+        showResult();
+      }
+    }
+
+    function cancelLoading(){
+      loadingCanceled = true;
+      document.getElementById("loader").style.display="none";
+    }
+
+    function showResult(){
+      const container = document.getElementById("result-area");
+      container.innerHTML = "";
+
+      const modules = {
+        1:"https://drive.google.com/file/d/1_78tpmdhuzqmFL6mAa222bYi3RfBC6UE/view",
+        2:"https://drive.google.com/file/d/1DJyoD6NZdU6R6WF-lIypqTohDIQorvE1/view",
+        3:"https://drive.google.com/file/d/1LA6XI2DgcT_5U-qBLS4sKu_iGpLexOcf/view",
+        4:"https://drive.google.com/file/d/1PdYvghq_OD1HABpN2jK7WxvZcQ_OXGjD/view",
+        5:"https://drive.google.com/file/d/19Fq4uzcfJ44-C1wfwqDZOZ7IAGas5ENh/view"
+      };
+
+      if(chosenMode==="most"){
+        container.innerHTML=`
+          <h2 style="margin-top:16px;color:var(--light-gold)">Most Important Questions</h2>
+          <p style="font-size:13px;color:#e0e8e0;margin-bottom:10px">Click a module to open</p>
+          <div class="module-list">
+            ${Object.keys(modules).map(n=>`
+              <div class="module-card" onclick="window.open('${modules[n]}','_blank')">
+                <div class="module-title">📘 Module ${n}</div><div class="arrow">➔</div>
+              </div>`).join("")}
+          </div>`;
+      } else {
+        document.getElementById("app").classList.add("exact-theme");
+        container.innerHTML=`
+          <h2 style="margin-top:16px;color:var(--light-gold)">Exact Answers</h2>
+          <p style="font-size:13px;color:#fff0c9;margin-bottom:10px">Click a module to open</p>
+          <div class="module-list">
+            ${Object.keys(modules).map(n=>`
+              <div class="module-card" onclick="window.open('${modules[n]}','_blank')">
+                <div class="module-title">📚 Module ${n}</div><div class="arrow">➔</div>
+              </div>`).join("")}
+          </div>`;
+      }
+    }
+  </script>
+</body>
+</html>
