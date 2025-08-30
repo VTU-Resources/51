@@ -302,10 +302,25 @@
       showResult();
     }
 
-    loaderCancel.addEventListener('click', ()=>{ canceled = true; loaderWrap.style.display='none'; loaderWrap.setAttribute('aria-hidden','true'); showResult(true); });
+    loaderCancel.addEventListener('click', ()=>{
+      canceled = true;
+      loaderWrap.style.display='none';
+      loaderWrap.setAttribute('aria-hidden','true');
+      showResult(true);
+    });
+
+    // hide choice area and intro when showing result so only selected materials are shown
+    function hideChoiceTop(){
+      const choiceRow = document.querySelector('.choice-row');
+      const intro = document.querySelector('.intro');
+      if(choiceRow) choiceRow.style.display = 'none';
+      if(intro) intro.style.display = 'none';
+    }
 
     // Show result for selected mode. If skip flag true (cancelled loader), still show.
     function showResult(skip=false){
+      hideChoiceTop(); // ensure top choices removed on result
+
       const result = document.getElementById('result');
       result.innerHTML = '';
 
@@ -315,6 +330,7 @@
       const chosen = (mode === 'most') ? modulesMost : modulesExact;
 
       if(mode === 'most'){
+        // header for chosen view
         const h = document.createElement('h2'); h.textContent = 'Most Important Questions'; h.style.color = 'var(--gold)'; h.style.marginTop='14px'; h.style.fontSize='18px';
         const p = document.createElement('p'); p.textContent = 'Select the Modules & Access'; p.style.color='var(--muted)'; p.style.marginTop='6px';
         result.appendChild(h); result.appendChild(p);
@@ -322,7 +338,7 @@
         for(let i=0;i<chosen.length;i++){
           const k = i+1;
           const card = document.createElement('div'); card.className = 'module-card';
-          card.innerHTML = `<div class=\"module-title\">📘 Module ${k}</div><div class=\"module-arrow\">➔</div>`;
+          card.innerHTML = `<div class="module-title">📘 Module ${k}</div><div class="module-arrow">➔</div>`;
           card.tabIndex = 0;
           card.setAttribute('role','button');
           const link = chosen[i];
@@ -342,7 +358,7 @@
         for(let i=0;i<chosen.length;i++){
           const k = i+1;
           const card = document.createElement('div'); card.className = 'module-card';
-          card.innerHTML = `<div class=\"module-title\">📚 Module ${k}</div><div class=\"module-arrow\">➔</div>`;
+          card.innerHTML = `<div class="module-title">📚 Module ${k}</div><div class="module-arrow">➔</div>`;
           card.tabIndex = 0;
           card.setAttribute('role','button');
           const link = chosen[i];
@@ -354,12 +370,7 @@
         result.appendChild(list);
       }
 
-      // add back to top / choose another button
-      const nav = document.createElement('div'); nav.style.marginTop='14px';
-      const btn = document.createElement('button'); btn.className='btn ghost'; btn.textContent='Choose another view'; btn.style.padding='10px 14px';
-      btn.addEventListener('click', ()=>{ document.getElementById('result').innerHTML=''; document.getElementById('app').classList.remove('exact-theme'); window.scrollTo({top:0,behavior:'smooth'}); });
-      nav.appendChild(btn);
-      result.appendChild(nav);
+      // do not add "choose another" button. only show the selected materials per request.
 
       // ensure page scrolls to results on mobile
       setTimeout(()=>{ result.scrollIntoView({behavior:'smooth', block:'start'}); },80);
@@ -369,8 +380,12 @@
     }
 
     // accessibility: close overlay on ESC
-    document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ if(overlay.style.display==='flex'){ closeOverlay(); } else if(loaderWrap.style.display==='flex'){ canceled=true; loaderWrap.style.display='none'; loaderWrap.setAttribute('aria-hidden','true'); showResult(true); } } });
-
+    document.addEventListener('keydown',(e)=>{ 
+      if(e.key==='Escape'){
+        if(overlay.style.display==='flex'){ closeOverlay(); } 
+        else if(loaderWrap.style.display==='flex'){ canceled=true; loaderWrap.style.display='none'; loaderWrap.setAttribute('aria-hidden','true'); showResult(true); }
+      } 
+    });
   </script>
 </body>
 </html>
